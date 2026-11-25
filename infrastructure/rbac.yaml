@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: healops-backend
+  namespace: healops
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: healops-recovery
+  namespace: healops
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list", "watch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: healops-recovery
+  namespace: healops
+subjects:
+  - kind: ServiceAccount
+    name: healops-backend
+    namespace: healops
+roleRef:
+  kind: Role
+  name: healops-recovery
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: healops-observer
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "pods", "namespaces", "events"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: healops-observer
+subjects:
+  - kind: ServiceAccount
+    name: healops-backend
+    namespace: healops
+roleRef:
+  kind: ClusterRole
+  name: healops-observer
+  apiGroup: rbac.authorization.k8s.io

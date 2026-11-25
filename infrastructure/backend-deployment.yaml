@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: healops-backend
+  namespace: healops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: healops-backend
+  template:
+    metadata:
+      labels:
+        app: healops-backend
+    spec:
+      serviceAccountName: healops-backend
+      containers:
+        - name: backend
+          image: healops-backend:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: PROMETHEUS_URL
+              value: http://prometheus.monitoring.svc.cluster.local:9090
+            - name: AUTOMATED_RECOVERY
+              value: "false"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: healops-backend
+  namespace: healops
+spec:
+  selector:
+    app: healops-backend
+  ports:
+    - port: 8000
+      targetPort: 8000

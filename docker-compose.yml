@@ -1,0 +1,30 @@
+services:
+  backend:
+    build: ./backend
+    container_name: healops-backend
+    ports:
+      - "8000:8000"
+    environment:
+      PROMETHEUS_URL: http://prometheus:9090
+      AUTOMATED_RECOVERY: "false"
+    volumes:
+      - ./backend/healops.db:/app/healops.db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: healops-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: healops-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
